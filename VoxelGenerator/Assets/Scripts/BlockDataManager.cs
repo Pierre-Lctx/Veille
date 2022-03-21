@@ -11,7 +11,7 @@ public class BlockDataManager : MonoBehaviour
 
     private void Awake()
     {
-        foreach(var item in textureData.textureDataList)
+        foreach (var item in textureData.textureDataList)
         {
             if (blockTextureDataDictionary.ContainsKey(item.blockType) == false)
             {

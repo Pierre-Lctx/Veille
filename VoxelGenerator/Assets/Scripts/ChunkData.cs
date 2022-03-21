@@ -20,4 +20,5 @@ public class ChunkData
         this.worldPosition = worldPosition;
         blocks = new BlockType[chunkSize * chunkHeight * chunkSize];
     }
+
 }

@@ -16,7 +16,7 @@ public class ChunkRenderer : MonoBehaviour
 
     public ChunkData ChunkData { get; private set; }
 
-    public bool ModifiedByPlayer
+    public bool ModifiedByThePlayer
     {
         get
         {
@@ -77,16 +77,13 @@ public class ChunkRenderer : MonoBehaviour
     {
         if (showGizmo)
         {
-            if(Application.isPlaying && ChunkData != null)
+            if (Application.isPlaying && ChunkData != null)
             {
                 if (Selection.activeObject == gameObject)
-                {
                     Gizmos.color = new Color(0, 1, 0, 0.4f);
-                }
                 else
-                {
                     Gizmos.color = new Color(1, 0, 1, 0.4f);
-                }
+
                 Gizmos.DrawCube(transform.position + new Vector3(ChunkData.chunkSize / 2f, ChunkData.chunkHeight / 2f, ChunkData.chunkSize / 2f), new Vector3(ChunkData.chunkSize, ChunkData.chunkHeight, ChunkData.chunkSize));
             }
         }

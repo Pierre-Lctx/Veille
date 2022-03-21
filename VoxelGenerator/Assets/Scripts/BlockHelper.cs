@@ -14,38 +14,50 @@ public static class BlockHelper
         Direction.up
     };
 
-    public static Vector2Int TexturePosition(Direction direction, BlockType blockType)
+    public static MeshData GetMeshData
+        (ChunkData chunk, int x, int y, int z, MeshData meshData, BlockType blockType)
     {
-        switch (direction)
+        if (blockType == BlockType.Air || blockType == BlockType.Nothing)
+            return meshData;
+
+        foreach (Direction direction in directions)
         {
-            case Direction.up:
-                return BlockDataManager.blockTextureDataDictionary[blockType].up;
-            case Direction.down:
-                return BlockDataManager.blockTextureDataDictionary[blockType].down;
-            default:
-                return BlockDataManager.blockTextureDataDictionary[blockType].side;
+            var neighbourBlockCoordinates = new Vector3Int(x, y, z) + direction.GetVector();
+            var neighbourBlockType = Chunk.GetBlockFromChunkCoordinates(chunk, neighbourBlockCoordinates);
+
+            if (neighbourBlockType != BlockType.Nothing && BlockDataManager.blockTextureDataDictionary[neighbourBlockType].isSolid == false)
+            {
+
+                if (blockType == BlockType.Water)
+                {
+                    if (neighbourBlockType == BlockType.Air)
+                        meshData.waterMesh = GetFaceDataIn(direction, chunk, x, y, z, meshData.waterMesh, blockType);
+                }
+                else
+                {
+                    meshData = GetFaceDataIn(direction, chunk, x, y, z, meshData, blockType);
+                }
+
+            }
         }
+
+        return meshData;
     }
 
-    public static Vector2[] FaceUVs(Direction direction, BlockType blockType)
+    public static MeshData GetFaceDataIn(Direction direction, ChunkData chunk, int x, int y, int z, MeshData meshData, BlockType blockType)
     {
-        Vector2[] UVs = new Vector2[4];
-        var tilePos = TexturePosition(direction, blockType);
+        GetFaceVertices(direction, x, y, z, meshData, blockType);
+        meshData.AddQuadTriangles(BlockDataManager.blockTextureDataDictionary[blockType].generatesCollider);
+        meshData.uv.AddRange(FaceUVs(direction, blockType));
 
-        UVs[0] = new Vector2(BlockDataManager.tileSizeX * tilePos.x + BlockDataManager.tileSizeX - BlockDataManager.textureOffset, BlockDataManager.tileSizeY * tilePos.y + BlockDataManager.textureOffset);
 
-        UVs[1] = new Vector2(BlockDataManager.tileSizeX * tilePos.x + BlockDataManager.tileSizeX - BlockDataManager.textureOffset, BlockDataManager.tileSizeY * tilePos.y + BlockDataManager.tileSizeY - BlockDataManager.textureOffset);
-
-        UVs[2] = new Vector2(BlockDataManager.tileSizeX * tilePos.x + BlockDataManager.textureOffset, BlockDataManager.tileSizeY * tilePos.y + BlockDataManager.tileSizeY - BlockDataManager.textureOffset);
-
-        UVs[3] = new Vector2(BlockDataManager.tileSizeX * tilePos.x + BlockDataManager.textureOffset, BlockDataManager.tileSizeY * tilePos.y + BlockDataManager.textureOffset);
-
-        return UVs;
+        return meshData;
     }
 
     public static void GetFaceVertices(Direction direction, int x, int y, int z, MeshData meshData, BlockType blockType)
     {
-        var generatesCollider = BlockDataManager.blockTextureDataDictionary[blockType].generatorCollider;
+        var generatesCollider = BlockDataManager.blockTextureDataDictionary[blockType].generatesCollider;
+        //order of vertices matters for the normals and how we render the mesh
         switch (direction)
         {
             case Direction.backwards:
@@ -90,42 +102,36 @@ public static class BlockHelper
         }
     }
 
-    public static MeshData GetMeshData(ChunkData chunk, int x, int y, int z, MeshData meshData, BlockType blockType)
+    public static Vector2[] FaceUVs(Direction direction, BlockType blockType)
     {
-        if (blockType == BlockType.Air || blockType == BlockType.Nothing)
-            return meshData;
+        Vector2[] UVs = new Vector2[4];
+        var tilePos = TexturePosition(direction, blockType);
 
-        foreach (Direction direction in directions)
+        UVs[0] = new Vector2(BlockDataManager.tileSizeX * tilePos.x + BlockDataManager.tileSizeX - BlockDataManager.textureOffset,
+            BlockDataManager.tileSizeY * tilePos.y + BlockDataManager.textureOffset);
+
+        UVs[1] = new Vector2(BlockDataManager.tileSizeX * tilePos.x + BlockDataManager.tileSizeX - BlockDataManager.textureOffset,
+            BlockDataManager.tileSizeY * tilePos.y + BlockDataManager.tileSizeY - BlockDataManager.textureOffset);
+
+        UVs[2] = new Vector2(BlockDataManager.tileSizeX * tilePos.x + BlockDataManager.textureOffset,
+            BlockDataManager.tileSizeY * tilePos.y + BlockDataManager.tileSizeY - BlockDataManager.textureOffset);
+
+        UVs[3] = new Vector2(BlockDataManager.tileSizeX * tilePos.x + BlockDataManager.textureOffset,
+            BlockDataManager.tileSizeY * tilePos.y + BlockDataManager.textureOffset);
+
+        return UVs;
+    }
+
+    public static Vector2Int TexturePosition(Direction direction, BlockType blockType)
+    {
+        switch (direction)
         {
-            var neighbourBlockCoordinates = new Vector3Int(x, y, z) + direction.GetVector();
-            var neighbourBlockType = Chunk.GetBlockFromChunkCoordinates(chunk, neighbourBlockCoordinates);
-
-            if (neighbourBlockType != BlockType.Nothing && BlockDataManager.blockTextureDataDictionary[neighbourBlockType].isSolid == false)
-            {
-
-                if (blockType == BlockType.Water)
-                {
-                    if (neighbourBlockType == BlockType.Air)
-                        meshData.waterMesh = GetFaceDataIn(direction, chunk, x, y, z, meshData.waterMesh, blockType);
-                }
-                else
-                {
-                    meshData = GetFaceDataIn(direction, chunk, x, y, z, meshData, blockType);
-                }
-
-            }
-        }
-
-        return meshData;
-    }
-
-    public static MeshData GetFaceDataIn(Direction direction, ChunkData chunk, int x, int y, int z, MeshData meshData, BlockType blockType)
-    {
-        GetFaceVertices(direction, x, y, z, meshData, blockType);
-        meshData.AddQuadTriangles(BlockDataManager.blockTextureDataDictionary[blockType].generatorCollider);
-        meshData.uv.AddRange(FaceUVs(direction, blockType));
-
-        return meshData;
-    }
-
+            case Direction.up:
+                return BlockDataManager.blockTextureDataDictionary[blockType].up;
+            case Direction.down:
+                return BlockDataManager.blockTextureDataDictionary[blockType].down;
+            default:
+                return BlockDataManager.blockTextureDataDictionary[blockType].side;
+        };
+}
 }

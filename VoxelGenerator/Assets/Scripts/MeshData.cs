@@ -22,16 +22,17 @@ public class MeshData
         }
     }
 
-    public void AddVertex(Vector3 vertex, bool vertexGeneratorCollider)
+    public void AddVertex(Vector3 vertex, bool vertexGeneratesCollider)
     {
         vertices.Add(vertex);
-        if (vertexGeneratorCollider)
+        if (vertexGeneratesCollider)
         {
             colliderVertices.Add(vertex);
         }
+
     }
 
-    public void AddQuadTriangles(bool quadGeneratorCollider)
+    public void AddQuadTriangles(bool quadGeneratesCollider)
     {
         triangles.Add(vertices.Count - 4);
         triangles.Add(vertices.Count - 3);
@@ -41,7 +42,7 @@ public class MeshData
         triangles.Add(vertices.Count - 2);
         triangles.Add(vertices.Count - 1);
 
-        if (quadGeneratorCollider)
+        if (quadGeneratesCollider)
         {
             colliderTriangles.Add(colliderVertices.Count - 4);
             colliderTriangles.Add(colliderVertices.Count - 3);
